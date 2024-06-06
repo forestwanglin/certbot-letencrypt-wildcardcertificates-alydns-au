@@ -149,6 +149,7 @@ $ ./certbot-auto renew --cert-name simplehttps.com  --manual-auth-hook "/脚本�
 - 腾讯云 python 版 @akgnah
 - 华为云 python 版 @jinhucheung
 - GoDaddy PHP 版 wlx_1990 （2019-01-11）
+- Namesilo python 版本 (2024-06-06)
 
 ### 其他
 

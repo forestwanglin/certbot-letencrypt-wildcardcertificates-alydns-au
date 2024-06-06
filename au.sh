@@ -7,7 +7,7 @@
 #PHP 命令行路径，如果有需要可以修改
 phpcmd="/usr/bin/php"
 #Python 命令行路径，如果有需要可以修改
-pythoncmd="/usr/bin/python"
+pythoncmd="/usr/local/bin/python"
 
 #填写阿里云的AccessKey ID及AccessKey Secret
 #如何申请见https://help.aliyun.com/knowledge_detail/38738.html
@@ -28,6 +28,11 @@ HWY_TOKEN=""
 #如何申请见https://developer.godaddy.com/getstarted
 GODADDY_KEY=""
 GODADDY_TOKEN=""
+
+#Namesilo的API_KEY
+#如何申请见https://www.namesilo.com/account/api-manager
+NAMESILO_KEY=""
+NAMESILO_TOKEN=""
 
 ################ END ##############
 
@@ -101,6 +106,10 @@ case $plang in
 		dnsapi=$PATH"/python-version/godaddydns.py"
 		key=$GODADDY_KEY
 		token=$GODADDY_TOKEN
+	elif [[ "$pdns" == "namesilo" ]]; then
+		dnsapi=$PATH"/python-version/namesilodns.py"
+		key=$NAMESILO_KEY
+		token=$NAMESILO_TOKEN
 	else 
 		echo "Not support this dns services"
 		exit
@@ -109,7 +118,12 @@ case $plang in
   
 esac
 
-$cmd $dnsapi $paction $CERTBOT_DOMAIN "_acme-challenge" $CERTBOT_VALIDATION $key $token >>"/var/log/certd.log"
+$cmd $dnsapi $paction $CERTBOT_DOMAIN "_acme-challenge" $CERTBOT_VALIDATION $key $token >> "/var/log/certd.log"
+
+#CERTBOT_DOMAIN=xxx.xyz
+#CERTBOT_VALIDATION=HSHSHHS
+#$cmd $dnsapi $paction $CERTBOT_DOMAIN "_acme-challenge" $CERTBOT_VALIDATION $key $token >> "/var/log/certd.log"
+
 
 if [[ "$paction" == "add" ]]; then
         # DNS TXT 记录刷新时间
