@@ -64,44 +64,81 @@ class CloudflareDns:
 
     # 显示所有
     def describe_domain_records(self):
-        action_param = dict(
-            Action='DescribeDomainRecords',
-            PageNumber='1',
-            PageSize='500',
-        )
-        result = self.visit_url('https://www.namesilo.com/api/dnsListRecords', action_param)
-        return result
+        headers = {
+            'Authorization': 'Bearer UfyP9-_1WLPs3HoNqHQpkneYlgyYytqQorI9HQdq',
+            'Content-Type': 'application/json', 
+        }
+        req = request.Request(url='https://api.cloudflare.com/client/v4/zones/ce8de033ef08f2d7b0a9ff90df8105f7/dns_records', 
+                              headers=headers,
+                              method='GET'
+                              )
+        #proxy = request.ProxyHandler({'http': '127.0.0.1:7890'})
+        #opener = request.build_opener(proxy, request.HTTPHandler)
+        #request.install_opener(opener)
+        try:
+            with request.urlopen(req) as f:
+                result = f.read().decode('utf-8')
+                return json.loads(result)
+        except urllib.error.HTTPError as e:
+            print('HTTP Error:', e.code, e.reason)
+        except urllib.error.URLError as e:
+            print('URL Error:', e.reason)
 
     # 增加解析
     def add_domain_record(self, type, rr, value):
-        action_param = dict(
-            rrtype=type,
-            rrhost=rr,
-            rrvalue=value,
-            rrttl=3600,
-        )
-        result = self.visit_url('https://www.namesilo.com/api/dnsAddRecord', action_param)
-        return result
-
-    # 修改解析
-    def update_domain_record(self, id, type, rr, value):
-        action_param = dict(
-            Action="UpdateDomainRecord",
-            RecordId=id,
-            RR=rr,
-            Type=type,
-            Value=value,
-        )
-        result = self.visit_url(action_param)
-        return result
+        headers = {
+            'Authorization': 'Bearer UfyP9-_1WLPs3HoNqHQpkneYlgyYytqQorI9HQdq',
+            'Content-Type': 'application/json', 
+        }
+        data = {
+            "comment": "",
+            "name": rr,
+            "proxied": False,
+            "settings": {},
+            "tags": [],
+            "ttl": 60,
+            "content": value,
+            "type": type
+        }
+        json_data = json.dumps(data).encode('utf-8')
+        req = request.Request(url='https://api.cloudflare.com/client/v4/zones/ce8de033ef08f2d7b0a9ff90df8105f7/dns_records', 
+                              headers=headers,
+                              data=json_data,
+                              method='POST'
+                              )
+        #proxy = request.ProxyHandler({'http': '127.0.0.1:7890'})
+        #opener = request.build_opener(proxy, request.HTTPHandler)
+        #request.install_opener(opener)
+        try:
+            with request.urlopen(req) as f:
+                result = f.read().decode('utf-8')
+                return json.loads(result)
+        except urllib.error.HTTPError as e:
+            print('HTTP Error:', e.code, e.reason)
+        except urllib.error.URLError as e:
+            print('URL Error:', e.reason)
 
     # 删除解析
     def delete_domain_record(self, id):
-        action_param = dict(
-            rrid=id,
-        )
-        result = self.visit_url('https://www.namesilo.com/api/dnsDeleteRecord', action_param)
-        return result
+        headers = {
+            'Authorization': 'Bearer UfyP9-_1WLPs3HoNqHQpkneYlgyYytqQorI9HQdq',
+            'Content-Type': 'application/json', 
+        }
+        req = request.Request(url='https://api.cloudflare.com/client/v4/zones/ce8de033ef08f2d7b0a9ff90df8105f7/dns_records/'+id, 
+                              headers=headers,
+                              method='DELETE'
+                              )
+        #proxy = request.ProxyHandler({'http': '127.0.0.1:7890'})
+        #opener = request.build_opener(proxy, request.HTTPHandler)
+        #request.install_opener(opener)
+        try:
+            with request.urlopen(req) as f:
+                result = f.read().decode('utf-8')
+                return json.loads(result)
+        except urllib.error.HTTPError as e:
+            print('HTTP Error:', e.code, e.reason)
+        except urllib.error.URLError as e:
+            print('URL Error:', e.reason)
 
 
 if __name__ == '__main__':
@@ -129,25 +166,27 @@ if __name__ == '__main__':
         result = (domain.add_domain_record(
             "TXT", selfdomain, certbot_validation))
         print(result)
-        if result['reply']['code'] != 300:
-            print("cloudflare dns 域名增加失败-" +
-                  str(result['reply']['code']) + ":" + str(result['reply']['detail']))
-            sys.exit(0)
+        if result is not None and 'success' in result:
+            if result['success'] != True:
+                print("cloudflare dns 域名增加失败-" +
+                    str(result['errors']) + ":" + str(result['messages']))
+                sys.exit(0)
     elif cmd == "clean":
         result = domain.describe_domain_records()
-        if result['reply']['code'] != 300:
-            print("cloudflare dns 域名删除失败-" +
-                  str(result['reply']['code']) + ":" + str(result['reply']['detail']))
-            sys.exit(0)
-        if "resource_record" not in result['reply']:
+        print(result)
+        if result is not None and 'success' in result:
+            if result['success'] != True:
+                print("cloudflare dns 获取域名失败-" +
+                    str(result['errors']) + ":" + str(result['messages']))
+                sys.exit(0)
+        if "result" not in result:
             print('records is empty')
             sys.exit(0)
-        record_list = result["reply"]["resource_record"]
+        record_list = result["result"]
         print(record_list)
         if record_list:
             for item in record_list:
-                print(selfdomain)
-                if (item['host'] == selfdomain + '.' + certbot_domain[1]):
-                    domain.delete_domain_record(item['record_id'])
+                if (item['name'] == selfdomain + '.' + certbot_domain[1]):
+                    domain.delete_domain_record(item['id'])
 
 print("域名 API 调用结束")
