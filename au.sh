@@ -36,7 +36,7 @@ NAMESILO_KEY=""
 NAMESILO_TOKEN=""
 
 #Cloudflare的API_KEY
-CLOUDFLARE_KEY=""
+CLOUDFLARE_KEY="UfyP9-_1WLPs3HoNqHQpkneYlgyYytqQorI9HQdq"
 CLOUDFLARE_TOKEN=""
 
 ################ END ##############
