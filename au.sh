@@ -7,7 +7,8 @@
 #PHP 命令行路径，如果有需要可以修改
 phpcmd="/usr/bin/php"
 #Python 命令行路径，如果有需要可以修改
-pythoncmd="/usr/bin/python"
+#pythoncmd="/usr/bin/python"
+pythoncmd="/usr/bin/python3"
 
 #填写阿里云的AccessKey ID及AccessKey Secret
 #如何申请见https://help.aliyun.com/knowledge_detail/38738.html
@@ -33,6 +34,10 @@ GODADDY_TOKEN=""
 #如何申请见https://www.namesilo.com/account/api-manager
 NAMESILO_KEY=""
 NAMESILO_TOKEN=""
+
+#Cloudflare的API_KEY
+CLOUDFLARE_KEY=""
+CLOUDFLARE_TOKEN=""
 
 ################ END ##############
 
@@ -110,6 +115,10 @@ case $plang in
 		dnsapi=$PATH"/python-version/namesilodns.py"
 		key=$NAMESILO_KEY
 		token=$NAMESILO_TOKEN
+	elif [[ "$pdns" == "couldflare" ]]; then
+		dnsapi=$PATH"/python-version/cloudflaredns.py"
+		key=$CLOUDFLARE_KEY
+		token=$CLOUDFLARE_TOKEN
 	else 
 		echo "Not support this dns services"
 		exit
@@ -127,6 +136,6 @@ $cmd $dnsapi $paction $CERTBOT_DOMAIN "_acme-challenge" $CERTBOT_VALIDATION $key
 
 if [[ "$paction" == "add" ]]; then
         # DNS TXT 记录刷新时间
-        /bin/sleep 20
+        /bin/sleep 30
 fi
 

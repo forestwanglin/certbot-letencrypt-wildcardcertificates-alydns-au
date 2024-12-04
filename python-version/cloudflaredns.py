@@ -14,7 +14,7 @@ from urllib.parse import quote
 from urllib.parse import urlencode
 from urllib import request
 
-class NamesiloDns:
+class CloudflareDns:
     def __init__(self, access_key_id, domain_name):
         self.access_key_id = access_key_id
         self.domain_name = domain_name
@@ -32,7 +32,6 @@ class NamesiloDns:
                     val = line.strip()
                     domainarr.append(val)
 
-            #rootdomain = '.'.join(domain_parts[-(2 if domain_parts[-1] in {"co.jp", "com.tw", "net", "com", "com.cn", "org", "cn", "gov", "net.cn", "io", "top", "me", "int", "edu", "link"} else 3):])
             rootdomain = '.'.join(domain_parts[-(2 if domain_parts[-1] in
                                                  domainarr else 3):])
             selfdomain = domain.split(rootdomain)[0]
@@ -61,7 +60,7 @@ class NamesiloDns:
 
         url = url + '?' + urlencode(url_param)
         #print(url)
-        return NamesiloDns.access_url(url)
+        return CloudflareDns.access_url(url)
 
     # 显示所有
     def describe_domain_records(self):
@@ -117,27 +116,27 @@ if __name__ == '__main__':
     print("-".join(sys.argv))
     file_name, cmd, certbot_domain, acme_challenge, certbot_validation, ACCESS_KEY_ID = sys.argv
 
-    certbot_domain = NamesiloDns.getDomain(certbot_domain)
+    certbot_domain = CloudflareDns.getDomain(certbot_domain)
     print (certbot_domain)
     if certbot_domain[0] == "":
             selfdomain = acme_challenge
     else:
             selfdomain = acme_challenge + "." + certbot_domain[0]
 
-    domain = NamesiloDns(ACCESS_KEY_ID, certbot_domain[1])
+    domain = CloudflareDns(ACCESS_KEY_ID, certbot_domain[1])
 
     if cmd == "add":
         result = (domain.add_domain_record(
             "TXT", selfdomain, certbot_validation))
         print(result)
         if result['reply']['code'] != 300:
-            print("namesilo dns 域名增加失败-" +
+            print("cloudflare dns 域名增加失败-" +
                   str(result['reply']['code']) + ":" + str(result['reply']['detail']))
             sys.exit(0)
     elif cmd == "clean":
         result = domain.describe_domain_records()
         if result['reply']['code'] != 300:
-            print("aly dns 域名删除失败-" +
+            print("cloudflare dns 域名删除失败-" +
                   str(result['reply']['code']) + ":" + str(result['reply']['detail']))
             sys.exit(0)
         if "resource_record" not in result['reply']:
